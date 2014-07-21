@@ -1,0 +1,47 @@
+\documentclass[12pt]{article}
+ \usepackage[margin=1in]{geometry} 
+\usepackage{amsmath,amsthm,amssymb,amsfonts}
+\usepackage{minted}
+\usepackage{color}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\Z}{\mathbb{Z}}
+\definecolor{bg}{rgb}{0.95,0.95,0.95}
+\begin{document}
+ 
+%\renewcommand{\qedsymbol}{\filledbox}
+%Good resources for looking up how to do stuff:
+%Binary operators: http://www.access2science.com/latex/Binary.html
+%General help: http://en.wikibooks.org/wiki/LaTeX/Mathematics
+%Or just google stuff
+ 
+\title{COSC441 - Assignment 1}
+\author{James Boocock}
+\maketitle
+\section{Extracting and Compiling}
+My version of assignment one uses linux pthreads.
+
+First extract the files and run using the following command.
+
+\begin{minted}[bgcolor=bg, frame=lines]{bash}
+    tar xzf asgn1.tar.gz
+\end{minted}
+Navigate into the asgn1 directory and run make, this will generate 5 exectuables q01-q05 representing each part of the assignment.
+
+\section{Questions} 
+\begin{enumerate}
+\item The first example uses a shared non-volatile global variable, smart compilers may attempt to register optimise the variable, this can be problematic because its
+    value can be changed by another thread. As we increase the number of threads we expect the sum to be $ threads * \sum_{i=1}^{n} i$. With small values of $ n $
+    the expected sum is the same or similar to the calculated sum, the entire loop is finished before the next thread is even created. As I increased $ n $ I found that the difference between the expected sum and calculated sum increased, I hypothesise that the increased runtime of the program increases the number of interrupts in critical locations. Thread number also had a similar effect, presumably because of the relationship between thread number and interrupt frequency. The runtime also increases approximately linearly as thread number is increased. 
+    
+\item Replacing the variable with a volatile keyword guarantees the compiler will not register optimize the global variable. Although operations on volatile variables are not atomic, so the calculations suffer from the same problems as earlier. The run-time also increased slightly because the compiler cannot perform  optimizations. 
+\item
+    Finally we have a sensible program that calculates correctly, my program used the gcc function \_\_sync\_add\_and\_fetch\(\) to make the $ global_sum += 1 $ operation atomic, guaranteeing the operation is completed before another thread is allowed to read the global value. The program now takes significantly longer to run approximately ~3 times as long, presumably because of the overhead associated with guaranteeing the atomicity of the sum. 
+\item 
+    We replaced the GCC function call here with a pthread\_mutex\_lock and pthread\_mutex\_unlock call. Using the mutex to wrap the $ global\_sum +=1 $ ensures the program gives the correct result. Compared to the GCC atomic operation the program now takes even longer, this is likely because the atomic GCC function requires only one function call, as oppossed to pthread's mutex operation which requires two, one for acquiring and one for releasing the lock.  
+\item
+    In the final part of the assignment each thread calculated partial sums, and then used a pthread\_mutex to add these partial sums to the global variable. Herewe see that the runtime is slightly less than in our first example, but the program works correctly. The program is fast because locks are only acquired when absolutely necessary, once per thread, so in total the number of locks acquired and released is equal to the number of threads. I also speculate that slight improvement in speed compared to question 1 may be due to compiler optimisations on the partial sum calculations.  
+            
+\end{enumerate} 
+
+\end{document}
+              

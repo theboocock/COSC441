@@ -7,3 +7,4 @@ all:
 
 pdf: 
 	pdflatex -shell-escape asgn1.tex
+	rm -Rf asgn1.log asgn1.aux

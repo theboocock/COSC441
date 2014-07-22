@@ -5,7 +5,7 @@ for t in {1..16}
 do
     mkdir -p ${t}
     echo ${t}
-    for  n in 1000000 10000000 100000000 1000000000
+    for  n in 1000 100000 1000000 
     do
         (time ./q01 ${t} ${n}) > ${t}/q01_${n}.out 2> ${t}/q01_${n}.time
         (time ./q02 ${t} ${n}) > ${t}/q02_${n}.out 2> ${t}/q02_${n}.time

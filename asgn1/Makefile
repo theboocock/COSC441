@@ -1,6 +1,6 @@
 all:
 	gcc -o q01 q01.c -pthread
-	gcc -o q02 q02.c -pthread
+	gcc -o q02 q02.c -pthread -mt
 	gcc -o q03 q03.c -pthread
 	gcc -o q04 q04.c -pthread
 	gcc -o q05 q05.c -pthread

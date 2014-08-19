@@ -1,0 +1,1 @@
+1268.320 user + 4899.310 system = 6167.630 total seconds.

@@ -6,9 +6,12 @@
 #include <stdlib.h>
 #include <sys/msg.h>
 #include <sys/ipc.h>
+#include <sys/types.h>
 #include <pthread.h>
+#include <errno.h>
 
 int const Number_Count = 1000*1000*1000;
+double buffer_numbers[100][100];
 
 static int queue;
 
@@ -36,7 +39,6 @@ static void *producer(void *dummy) {
     double w;   // The random number
     struct my_msgbuf buffer;
     buffer.mtype = 1;
-    printf("%d mtype\n",buffer.mtype);
     for (i = 0; i < Number_Count; i++) {
     w  = recip_a * (double)(a = (int)((a * 11600LL) % 2147483579));
     w += recip_b * (double)(b = (int)((b * 47003LL) % 2147483543));
@@ -44,11 +46,16 @@ static void *producer(void *dummy) {
     w += recip_d * (double)(d = (int)((d * 33000LL) % 2147483123));
     if (w >= 2.0) w -= 2.0;
     if (w >= 1.0) w -= 1.0;
-    if((i % 100 == 0) || (i == Number_Count -1)){
-        msgsnd(queue,&buffer,sizeof(struct my_msgbuf) - sizeof(long),0);
+    if((i != 0 && i % 100 == 0) | i == Number_Count -1){
+    if(msgsnd(queue,&buffer,sizeof(double),0) == -1){
+        printf("failed send\n");
+        exit(1);    
+        }
     }
-    buffer.x[i % 100] = w;
+
+    buffer.x[i%100] = w;
     }
+    return NULL;
 }
 
 static void *consumer(void *dummy) {
@@ -59,16 +66,19 @@ static void *consumer(void *dummy) {
     struct my_msgbuf buffer;
     int status; 
     for (i = 0; i < Number_Count; i++) {
-    if(i != 0 && i % 100 == 0){
-        msgrcv(queue, &buffer, sizeof(struct my_msgbuf) - sizeof(long),0,0);
-    }
-    x = buffer.x[i % 100];
+    if(i % 100 == 0){
+    if(msgrcv(queue, &buffer, sizeof(double),0,0) == -1){
+        printf("failed\n");
+        exit(1);   
+    }}
+    x = buffer.x[i%100];
     v = (x - mean)/(i+1);
     sum2 += ((i+1)*v)*(i*v);
     mean += v;
     }
     printf("Mean = %g, standard deviation = %g\n",
            mean, sqrt(sum2/(i-1)));
+    return NULL;
 }
 
 #define N_PRODUCERS 1
@@ -79,9 +89,15 @@ int main(void) {
     pthread_t consumer_id[N_CONSUMERS];
     int i;
     struct my_msgbuf buf;
-    key_t key = ftok("q03_100.c", 'B');
-    //msgctl(queue,IPC_RMID, NULL);
-    queue = msgget(key, 0664);
+    key_t key;
+    if((key = ftok("../", 'B'))== -1){
+        perror("mskey");
+        exit(1);
+    }
+    if ((queue = msgget(key, 0644 | IPC_CREAT))== -1) {
+        perror("msgget");
+        exit(1);
+    }
     printf("starting queue_ih %d \n",queue);
     for (i = 0; i < N_CONSUMERS; i++) {
 	pthread_create(&consumer_id[i], 0, consumer, 0);
@@ -99,7 +115,6 @@ int main(void) {
     }
     printf("finished\n");
     // destroy the message queue
-    msgctl(queue,IPC_RMID, NULL);
     return 0;
 }
 

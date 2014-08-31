@@ -1,1 +1,1 @@
-202.310 user + 1224.400 system = 1426.710 total seconds.
+143.650 user + 857.740 system = 1001.390 total seconds.

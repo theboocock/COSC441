@@ -46,7 +46,6 @@ static void *producer(void *dummy) {
     if (w >= 2.0) w -= 2.0;
     if (w >= 1.0) w -= 1.0;
     buffer.x = w;
-    printf("old %f\n",buffer.x);
     if(msgsnd(queue,&buffer,sizeof(double),0) == -1){
         printf("failed send\n");
         exit(1);    
@@ -67,7 +66,6 @@ static void *consumer(void *dummy) {
         printf("failed\n");
         exit(1);   
     }
-    printf("%f\n",buffer.x);
     x = buffer.x;
     v = (x - mean)/(i+1);
     sum2 += ((i+1)*v)*(i*v);

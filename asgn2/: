@@ -1,4 +1,3 @@
-
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -46,7 +45,7 @@ void *  producer(void *dummy) {
     w += recip_d * (double)(d = (int)((d * 33000LL) % 2147483123));
     if (w >= 2.0) w -= 2.0;
     if (w >= 1.0) w -= 1.0;
-    if ( i != 0 && i % 100 == 0){
+    if ( (i != 0 && i % 100 == 0) || (i == Number_Count - 1)){
             write(pipe_variable[1],&buffer, sizeof(*buffer)* 100); 
         }
     buffer[i % 100] = w;
@@ -90,7 +89,6 @@ int main(void){
         if ( s != 0 )
             handle_error_en(s, "pthread_join");
     }
-    exit(EXIT_SUCCESS);
     free(threads);
     exit(EXIT_SUCCESS);
 }

@@ -4,10 +4,10 @@
 #include <pthread.h>
 
 #ifndef N
-#define N 1
+#define N 100
 #endif
 #ifndef T
-#define T double *
+#define T int
 #endif
 
 typedef struct bounded_buffer {

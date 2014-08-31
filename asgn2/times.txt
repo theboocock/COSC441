@@ -1,0 +1,6 @@
+176.340 user + 846.860 system = 1023.200 total seconds.
+1897.060 user + 3605.710 system = 5502.770 total seconds.
+121.800 user + 464.070 system = 585.870 total seconds.
+19.890 user + 49.980 system = 69.870 total seconds.
+23.690 user + 41.610 system = 65.300 total seconds.
+22.440 user + 43.440 system = 65.880 total seconds.

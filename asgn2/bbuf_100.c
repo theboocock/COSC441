@@ -5,6 +5,7 @@
 #include <math.h>
 #include <stdlib.h>
 int const Number_Count = 1000*1000*1000;
+double buffer_numbers[100][100];
 void bounded_buffer_init(bounded_buffer *p) {
     pthread_mutexattr_t m;
     pthread_condattr_t  c;
@@ -83,7 +84,10 @@ static void *producer(void *dummy) {
         0.00000000046566140114899519981000567798175892812360;
 
     double w;   // The random number
-    double * buffer = calloc(100,sizeof(*buffer));;
+    double * buffer;
+    int ind_buffer;
+    ind_buffer=0;
+    buffer = buffer_numbers[ind_buffer];
     for (i = 0; i < Number_Count; i++) {
     w  = recip_a * (double)(a = (int)((a * 11600LL) % 2147483579));
     w += recip_b * (double)(b = (int)((b * 47003LL) % 2147483543));
@@ -91,25 +95,25 @@ static void *producer(void *dummy) {
     w += recip_d * (double)(d = (int)((d * 33000LL) % 2147483123));
     if (w >= 2.0) w -= 2.0;
     if (w >= 1.0) w -= 1.0;
-    if((i != 0 && i % 100 == 0) || (i == Number_Count - 1) ){ 
-        bounded_buffer_add_last(&bbuf, buffer);
-        buffer = malloc(100*sizeof(*buffer));
-    }
+    if((i != 0 && i % 100 == 0)| i == Number_Count - 1 ){
+        bounded_buffer_add_last(&bbuf,ind_buffer++);
+        ind_buffer %= 100;
+        buffer=buffer_numbers[ind_buffer];
+        }
     buffer[i % 100] = w;
     }
-
 }
 
 static void *consumer(void *dummy) {
     int i, j ;
     double x, v;
     double mean = 0.0, sum2 = 0.0;
-    double *buff = bounded_buffer_remove_first(&bbuf); 
+    double *buff;
+    int index; 
     for (i = 0; i < Number_Count; i++) {
     // Recieve from the other thread
-    if(i %100 ==0 && i != 0){
-        free(buff);
-        buff = bounded_buffer_remove_first(&bbuf);
+    if(i %100 ==0){
+        buff = buffer_numbers[bounded_buffer_remove_first(&bbuf)];
     }
     x = buff[i%100];
     v = (x - mean)/(i+1);
